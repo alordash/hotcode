@@ -149,7 +149,7 @@ mod tests {
         let result = slow_is_outside_dynamic_library();
 
         // Assert
-        assert!(result);
+        assert!(!result);
 
         dladdr::received(
             slow_is_outside_dynamic_library as *const c_void,
