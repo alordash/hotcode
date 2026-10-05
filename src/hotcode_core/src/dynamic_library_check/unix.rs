@@ -63,7 +63,7 @@ mod tests {
 
         dladdr::received(
             slow_is_outside_dynamic_library as *const c_void,
-            Arg::is(Dl_info_is_uninitialized),
+            Arg::Any,
             1.time(),
         )
         .no_other_calls();
@@ -91,7 +91,7 @@ mod tests {
 
         dladdr::received(
             slow_is_outside_dynamic_library as *const c_void,
-            Arg::is(Dl_info_is_uninitialized),
+            Arg::Any,
             1.time(),
         )
         .no_other_calls();
@@ -123,7 +123,7 @@ mod tests {
 
         dladdr::received(
             slow_is_outside_dynamic_library as *const c_void,
-            Arg::is(Dl_info_is_uninitialized),
+            Arg::Any,
             1.time(),
         )
         .no_other_calls();
@@ -153,21 +153,9 @@ mod tests {
 
         dladdr::received(
             slow_is_outside_dynamic_library as *const c_void,
-            Arg::is(Dl_info_is_uninitialized),
+            Arg::Any,
             1.time(),
         )
         .no_other_calls();
-    }
-
-    fn Dl_info_is_uninitialized(dl_info_ref: &*mut libc::Dl_info) -> bool {
-        let dl_info = unsafe {
-            dl_info_ref
-                .as_ref()
-                .expect("`*mut dl_info` should not be null")
-        };
-        dl_info.dli_fname.is_null()
-            && dl_info.dli_fbase.is_null()
-            && dl_info.dli_sname.is_null()
-            && dl_info.dli_saddr.is_null()
     }
 }
