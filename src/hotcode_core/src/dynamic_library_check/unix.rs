@@ -77,7 +77,7 @@ mod tests {
             .and_does(|(_, info_ptr)| {
                 let info = unsafe {
                     (*info_ptr)
-                        .as_ref()
+                        .as_mut()
                         .expect("`*mut dl_info` should not be null")
                 };
                 info.dli_fname = core::ptr::null();
@@ -106,10 +106,10 @@ mod tests {
             .and_does(move |(_, info_ptr)| {
                 let info = unsafe {
                     (*info_ptr)
-                        .as_ref()
+                        .as_mut()
                         .expect("`*mut dl_info` should not be null")
                 };
-                info.dli_fname = module_name;
+                info.dli_fname = module_name as *const _ as *const i8;
             });
 
         let current_exe = "veridis quo/quo vadis";
@@ -137,10 +137,10 @@ mod tests {
             .and_does(move |(_, info_ptr)| {
                 let info = unsafe {
                     (*info_ptr)
-                        .as_ref()
+                        .as_mut()
                         .expect("`*mut dl_info` should not be null")
                 };
-                info.dli_fname = b"quo vadis\0";
+                info.dli_fname = b"quo vadis\0" as *const _ as *const i8;
             });
 
         current_exe::setup().returns(Ok(PathBuf::from("veridis quo")));
