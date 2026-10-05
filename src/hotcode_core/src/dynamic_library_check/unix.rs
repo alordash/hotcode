@@ -5,7 +5,7 @@ use std::ffi::c_void;
 #[cfg_attr(test, mock)]
 #[inline(always)]
 unsafe fn dladdr(addr: *const c_void, info: *mut libc::Dl_info) -> libc::c_int {
-    libc::dladdr(addr, info)
+    unsafe { libc::dladdr(addr, info) }
 }
 
 #[cfg_attr(test, mock)]
@@ -31,7 +31,7 @@ pub fn slow_is_outside_dynamic_library() -> bool {
         if info.dli_fname.is_null() {
             return true;
         }
-        let Ok(current_exe_path) = std::env::current_exe() else {
+        let Ok(current_exe_path) = current_exe() else {
             return true;
         };
 
