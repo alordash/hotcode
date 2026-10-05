@@ -161,10 +161,7 @@ mod tests {
 
         get_module_file_name_w::setup(Arg::Any, Arg::Any, Arg::Any).returns(1);
 
-        current_exe::setup().returns(Err(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            "whatever",
-        )));
+        current_exe::setup().returns(Err(std::io::Error::other("whatever")));
 
         // Act
         let result = slow_is_outside_dynamic_library();
