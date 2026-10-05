@@ -14,12 +14,15 @@ libloading = { workspace = true }
 arc-swap = { workspace = true }
 notify-debouncer-full = { workspace = true }
 
+[dev-dependencies]
+automock = { workspace = true }
+
 [lints.clippy]
 needless_return = "allow"
 match_like_matches_macro = "allow"
 
 [target.'cfg(windows)'.dependencies]
-winapi = { workspace = true, features = ["libloaderapi", "minwindef"] }
+winapi = { workspace = true, features = ["libloaderapi", "minwindef", "winnt"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = { workspace = true }

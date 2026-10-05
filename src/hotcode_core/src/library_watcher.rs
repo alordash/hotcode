@@ -25,27 +25,16 @@ pub fn spawn(
             let debounced_events = events_result.unwrap_or_else(|e| {
                 panic!("Error handling debounced library file update event: {e:?}")
             });
-            let current_lib_path = current_lib.library_copy_path();
-
-            let mut lib_was_changed = false;
-            for event in debounced_events.into_iter().map(|x| x.event) {
-                let notify::Event {
-                    kind: notify::EventKind::Create(_) | notify::EventKind::Modify(_),
-                    paths,
-                    ..
-                } = event
-                else {
-                    continue;
-                };
-                for path in paths.into_iter() {
-                    if path == current_lib_path {
-                        return;
-                    } else if path == static_library_path {
-                        lib_was_changed = true;
+            let events_paths = debounced_events
+                .into_iter()
+                .filter_map(|x| match x.event.kind {
+                    notify::EventKind::Create(_) | notify::EventKind::Modify(_) => {
+                        Some(x.event.paths)
                     }
-                }
-            }
-            if !lib_was_changed {
+                    _ => None,
+                });
+            let current_lib_path = current_lib.library_copy_path();
+            if !library_was_changed(current_lib_path, static_library_path, events_paths) {
                 return;
             }
             let new_library = LibraryWrapper::new(static_library_path.to_owned());
@@ -62,4 +51,128 @@ pub fn spawn(
         .unwrap();
 
     core::mem::forget(watcher);
+}
+
+fn library_was_changed(
+    current_lib_path: &Path,
+    static_library_path: &Path,
+    events_paths: impl Iterator<Item = Vec<PathBuf>>,
+) -> bool {
+    let mut lib_was_changed = false;
+    for event_paths in events_paths {
+        for path in event_paths.into_iter() {
+            if path == current_lib_path {
+                return false;
+            } else if path == static_library_path {
+                lib_was_changed = true;
+            }
+        }
+    }
+    return lib_was_changed;
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(non_snake_case)]
+    use super::*;
+
+    #[test]
+    fn library_was_changed_AnyPathIsCurrentLibPath_ReturnsFalse() {
+        // Arrange
+        let current_lib_path = Path::new("current_lib_path");
+        let static_library_path = Path::new("static_library_path");
+        let events_paths = vec![
+            vec![PathBuf::from("1"), PathBuf::from("2"), PathBuf::from("3")],
+            vec![
+                PathBuf::from("4"),
+                current_lib_path.to_owned(),
+                PathBuf::from("6"),
+            ],
+        ];
+
+        // Act
+        let result = library_was_changed(
+            current_lib_path,
+            static_library_path,
+            events_paths.into_iter(),
+        );
+
+        // Assert
+        assert!(!result);
+    }
+
+    #[test]
+    fn library_was_changed_NonePathIsEqualToStaticLibraryPath_ReturnsFalse() {
+        // Arrange
+        let current_lib_path = Path::new("current_lib_path");
+        let static_library_path = Path::new("static_library_path");
+        let events_paths = vec![
+            vec![PathBuf::from("1"), PathBuf::from("2")],
+            vec![PathBuf::from("3")],
+        ];
+
+        // Act
+        let result = library_was_changed(
+            current_lib_path,
+            static_library_path,
+            events_paths.into_iter(),
+        );
+
+        // Assert
+        assert!(!result);
+    }
+
+    #[test]
+    fn library_was_changed_SomePathIsStaticLibraryPathAndAnyPathIsCurrentLibPath_ReturnsFalse() {
+        // Arrange
+        let current_lib_path = Path::new("current_lib_path");
+        let static_library_path = Path::new("static_library_path");
+        let events_paths = vec![
+            vec![
+                PathBuf::from("1"),
+                static_library_path.to_owned(),
+                PathBuf::from("3"),
+            ],
+            vec![
+                PathBuf::from("4"),
+                current_lib_path.to_owned(),
+                PathBuf::from("6"),
+            ],
+        ];
+
+        // Act
+        let result = library_was_changed(
+            current_lib_path,
+            static_library_path,
+            events_paths.into_iter(),
+        );
+
+        // Assert
+        assert!(!result);
+    }
+
+    #[test]
+    fn library_was_changed_SomePathIsStaticLibraryPathAndNonePathIsCurrentLibPath_ReturnsTrue() {
+        // Arrange
+        let current_lib_path = Path::new("current_lib_path");
+        let static_library_path = Path::new("static_library_path");
+        let events_paths = vec![
+            vec![
+                PathBuf::from("1"),
+                static_library_path.to_owned(),
+                PathBuf::from("3"),
+            ],
+            vec![PathBuf::from("4"), PathBuf::from("5"), PathBuf::from("6")],
+        ];
+
+        // Act
+        let result = library_was_changed(
+            current_lib_path,
+            static_library_path,
+            events_paths.into_iter(),
+        );
+
+        // Assert
+        assert!(result);
+    }
 }
