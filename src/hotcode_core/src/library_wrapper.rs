@@ -13,7 +13,6 @@ static TIME_START: LazyLock<Instant> = LazyLock::new(Instant::now);
 
 impl LibraryWrapper {
     pub fn new(library_source_path: PathBuf) -> Self {
-        dbg!("LOADING", &library_source_path);
         let tick_stamp = TIME_START.elapsed().as_millis();
         let library_copy_path = {
             let mut library_copy_path_base = library_source_path.clone();

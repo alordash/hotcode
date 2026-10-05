@@ -23,6 +23,6 @@ notify-debouncer-full = "0.7.0"
 libc = "0.2.189"
 winapi = "0.3.9"
 
-rsubstitute = "0.1.6"
+automock = "0.2.3"
 tempfile = "3.27.0"
 dircpy = "0.3.20"
