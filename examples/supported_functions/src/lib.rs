@@ -115,7 +115,7 @@ pub union Union {
 
 impl Union {
     pub fn new() -> Self {
-        Self { _unused: false }
+        Self { _unused: true }
     }
 }
 

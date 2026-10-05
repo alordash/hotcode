@@ -1,7 +1,7 @@
 use crate::LibraryWrapper;
 use crate::static_library::DYNAMIC_LIBRARIES_MAP;
 use arc_swap::ArcSwap;
-use notify_debouncer_full::{DebounceEventResult, notify};
+use notify_debouncer_full::{DebounceEventResult, DebouncedEvent, notify};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Duration;
@@ -26,26 +26,7 @@ pub fn spawn(
                 panic!("Error handling debounced library file update event: {e:?}")
             });
             let current_lib_path = current_lib.library_copy_path();
-
-            let mut lib_was_changed = false;
-            for event in debounced_events.into_iter().map(|x| x.event) {
-                let notify::Event {
-                    kind: notify::EventKind::Create(_) | notify::EventKind::Modify(_),
-                    paths,
-                    ..
-                } = event
-                else {
-                    continue;
-                };
-                for path in paths.into_iter() {
-                    if path == current_lib_path {
-                        return;
-                    } else if path == static_library_path {
-                        lib_was_changed = true;
-                    }
-                }
-            }
-            if !lib_was_changed {
+            if !library_was_changed(debounced_events, current_lib_path, static_library_path) {
                 return;
             }
             let new_library = LibraryWrapper::new(static_library_path.to_owned());
@@ -62,4 +43,29 @@ pub fn spawn(
         .unwrap();
 
     core::mem::forget(watcher);
+}
+
+// TODO - test it
+fn library_was_changed(
+    debounced_events: Vec<DebouncedEvent>,
+    current_lib_path: &Path,
+    static_library_path: &Path,
+) -> bool {
+    let mut lib_was_changed = false;
+    for paths in debounced_events
+        .into_iter()
+        .filter_map(|x| match x.event.kind {
+            notify::EventKind::Create(_) | notify::EventKind::Modify(_) => Some(x.event.paths),
+            _ => None,
+        })
+    {
+        for path in paths.into_iter() {
+            if path == current_lib_path {
+                return false;
+            } else if path == static_library_path {
+                lib_was_changed = true;
+            }
+        }
+    }
+    return lib_was_changed;
 }

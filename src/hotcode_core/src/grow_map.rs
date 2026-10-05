@@ -48,3 +48,90 @@ where
         return None;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #![allow(non_snake_case)]
+    use super::*;
+    use automock::AsTimes;
+
+    type Key = usize;
+    type Value = String;
+
+    #[test]
+    fn get_or_insert_with_NoEntry_CreatesUsingFactory() {
+        // Arrange
+        let grow_map = GrowMap::<Key, Value>::new();
+        let key: Key = 123;
+        let new_value = "quo vadis".to_owned();
+        factory::setup().returns(new_value.clone());
+
+        // Act
+        let result = grow_map.get_or_insert_with(key, factory);
+
+        // Assert
+        assert_eq!(result, &new_value);
+        factory::received::<Value>(1.time());
+    }
+
+    #[test]
+    fn get_or_insert_with_ExistingEntry_ReturnsExistingWithoutUsingFactory() {
+        // Arrange
+        let grow_map = GrowMap::<Key, Value>::new();
+        let key: Key = 123;
+        let existing_value = "quo vadis".to_owned();
+        {
+            let mut grow_map_write = grow_map
+                .inner
+                .write()
+                .expect("Unable to `write` to `GrowMap.inner`");
+            grow_map_write.insert(key, existing_value.clone());
+        }
+
+        // Act
+        let result = grow_map.get_or_insert_with(key, factory);
+
+        // Assert
+        assert_eq!(result, &existing_value);
+        factory::received_nothing::<Value>();
+    }
+
+    #[test]
+    fn get_NoEntry_ReturnsNone() {
+        // Arrange
+        let grow_map = GrowMap::<Key, Value>::new();
+        let key: Key = 123;
+
+        // Act
+        let result = grow_map.get(&key);
+
+        // Assert
+        assert_eq!(result, None);
+    }
+
+    #[test]
+    fn get_WithEntry_ReturnsSome() {
+        // Arrange
+        let grow_map = GrowMap::<Key, Value>::new();
+        let key: Key = 123;
+        let existing_value = "quo vadis".to_owned();
+        {
+            let mut grow_map_write = grow_map
+                .inner
+                .write()
+                .expect("Unable to `write` to `GrowMap.inner`");
+            grow_map_write.insert(key, existing_value.clone());
+        }
+
+        // Act
+        let result = grow_map.get(&key);
+
+        // Assert
+        assert_eq!(result, Some(&existing_value));
+    }
+
+    #[automock::mock]
+    fn factory<V>() -> V {
+        unreachable!()
+    }
+}
