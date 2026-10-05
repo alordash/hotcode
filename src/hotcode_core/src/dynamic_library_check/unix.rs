@@ -74,7 +74,12 @@ mod tests {
         // Arrange
         dladdr::setup(Arg::Any, Arg::Any)
             .returns(1)
-            .and_does(|(_, info)| {
+            .and_does(|(_, info_ptr)| {
+                let info = unsafe {
+                    (*info_ptr)
+                        .as_ref()
+                        .expect("`*mut dl_info` should not be null")
+                };
                 info.dli_fname = core::ptr::null();
             });
 
@@ -98,11 +103,16 @@ mod tests {
         let module_name = b"quo vadis\0";
         dladdr::setup(Arg::Any, Arg::Any)
             .returns(1)
-            .and_does(move |(_, info)| {
+            .and_does(move |(_, info_ptr)| {
+                let info = unsafe {
+                    (*info_ptr)
+                        .as_ref()
+                        .expect("`*mut dl_info` should not be null")
+                };
                 info.dli_fname = module_name;
             });
 
-        let current_exe = format!("veridis quo/{module_name}");
+        let current_exe = "veridis quo/quo vadis";
         current_exe::setup().returns(Ok(PathBuf::from(current_exe)));
 
         // Act
@@ -124,7 +134,12 @@ mod tests {
         // Arrange
         dladdr::setup(Arg::Any, Arg::Any)
             .returns(1)
-            .and_does(move |(_, info)| {
+            .and_does(move |(_, info_ptr)| {
+                let info = unsafe {
+                    (*info_ptr)
+                        .as_ref()
+                        .expect("`*mut dl_info` should not be null")
+                };
                 info.dli_fname = b"quo vadis\0";
             });
 
@@ -144,7 +159,12 @@ mod tests {
         .no_other_calls();
     }
 
-    fn Dl_info_is_uninitialized(dl_info: &libc::Dl_info) -> bool {
+    fn Dl_info_is_uninitialized(dl_info_ref: &*mut libc::Dl_info) -> bool {
+        let dl_info = unsafe {
+            dl_info_ref
+                .as_ref()
+                .expect("`*mut dl_info` should not be null")
+        };
         dl_info.dli_fname.is_null()
             && dl_info.dli_fbase.is_null()
             && dl_info.dli_sname.is_null()
