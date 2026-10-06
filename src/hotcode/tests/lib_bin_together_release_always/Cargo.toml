@@ -1,0 +1,16 @@
+[package]
+name = "lib_bin_together_release_always"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+hotcode = { path = "../.." }
+
+[workspace]
+
+[[bin]]
+name = "bin_together_release_always"
+path = "bin/bin_together_release_always.rs"

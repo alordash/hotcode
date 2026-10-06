@@ -17,21 +17,21 @@ fn hotreload_works() -> std::io::Result<()> {
     let lib_bar_dir = target_dir.as_ref().join(LIB_BAR_PACKAGE_NAME);
     let target_bar_lib = lib_bar_dir.join("src").join("lib.rs");
     let updated_bar_lib = lib_bar_dir.join("src").join("lib_updated.rs");
-    cargo_clean_workspace_rebuild_in(target_dir.as_ref())?;
+    cargo_clean_workspace_rebuild_in(target_dir.as_ref(), Profile::Dev)?;
 
     // Act 0 - start test process
-    let mut test_run_process = cargo_run_in(&bin_dir, "multiple_bin")?;
+    let mut test_run_process = cargo_run_in(&bin_dir, "multiple_bin", Profile::Dev)?;
 
     // Act 1 - Bar
     test_run_process.wait_for_input_from_stdout()?;
     std::fs::copy(updated_bar_lib, target_bar_lib)?;
-    cargo_clean_workspace_rebuild_in(target_dir.as_ref())?;
+    cargo_clean_workspace_rebuild_in(target_dir.as_ref(), Profile::Dev)?;
     test_run_process.send_enter_to_stdin()?;
 
     // Act 2 - Foo
     test_run_process.wait_for_input_from_stdout()?;
     std::fs::copy(updated_foo_lib, target_foo_lib)?;
-    cargo_clean_workspace_rebuild_in(target_dir.as_ref())?;
+    cargo_clean_workspace_rebuild_in(target_dir.as_ref(), Profile::Dev)?;
     test_run_process.send_enter_to_stdin()?;
 
     // Assert

@@ -14,7 +14,7 @@ hotcode_proc_macro = { version = "0.1.0", path = "src/hotcode_proc_macro" }
 proc-macro2 = { version = "1.0.95", features = ["span-locations"] }
 quote = "1.0.40"
 syn = { version = "3.0.5", features = ["full"] }
-not_enough_syntax = "0.1.6"
+not_enough_syntax = "0.1.7"
 
 libloading = "0.9.0"
 indexmap = "2.14.2"

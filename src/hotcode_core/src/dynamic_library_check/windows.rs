@@ -56,8 +56,6 @@ pub fn slow_is_outside_dynamic_library() -> bool {
 
         let module_name_bytes = &file_name_buffer[..file_name_length as usize];
         let module_name = String::from_utf16_lossy(module_name_bytes);
-        dbg!(&current_exe_path);
-        dbg!(&module_name);
 
         let result = current_exe_path.ends_with(module_name);
         return result;

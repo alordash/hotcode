@@ -6,6 +6,7 @@ use crate::caller_crate;
 use named_fn_arg::*;
 use not_enough_syntax::*;
 use pat_named_type::*;
+use proc_macro2::Span;
 use quote::{ToTokens, format_ident};
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
@@ -15,12 +16,14 @@ pub struct Parameters<'a> {
     pub attributes: &'a mut Vec<Attribute>,
     pub signature: &'a Signature,
     pub block: &'a mut Block,
+    pub add_debug_assertions_check: bool,
 }
 pub fn apply(
     Parameters {
         attributes,
         signature,
         block,
+        add_debug_assertions_check,
     }: Parameters,
 ) {
     let call_site = proc_macro::Span::call_site();
@@ -31,24 +34,11 @@ pub fn apply(
     let export_fn_ident_string =
         format_ident!("__hotcode_{}_{}", fn_ident_prefix, signature.ident).to_string();
 
-    let unsafe_export_name_attribute = {
-        let span = signature.span();
-        Attribute {
-            pound_token: Token![#](span),
-            style: AttrStyle::Outer,
-            bracket_token: token::Bracket(span),
-            meta: Meta::List(MetaList {
-                path: path::new(span, ["unsafe"]),
-                delimiter: MacroDelimiter::Paren(token::Paren(span)),
-                tokens: MetaNameValue {
-                    path: path::new(span, ["export_name"]),
-                    eq_token: Token![=](span),
-                    value: expr::lit::string(span, &export_fn_ident_string),
-                }
-                .to_token_stream(),
-            }),
-        }
-    };
+    let unsafe_export_name_attribute = generate_unsafe_export_name_attribute(
+        signature.span(),
+        &export_fn_ident_string,
+        add_debug_assertions_check,
+    );
     attributes.push(unsafe_export_name_attribute);
     let return_stmt = {
         let span = block.span();
@@ -147,9 +137,14 @@ pub fn apply(
     };
     let if_stmt = {
         let span = block.span();
+        let attrs = if add_debug_assertions_check {
+            vec![attributes::cfg(span, ["debug_assertions"])]
+        } else {
+            Vec::new()
+        };
         Stmt::Expr(
             Expr::If(ExprIf {
-                attrs: Vec::new(),
+                attrs,
                 if_token: Token![if](span),
                 cond: Box::new(is_outside_dynamic_library_expr),
                 then_branch: Block {
@@ -162,6 +157,43 @@ pub fn apply(
         )
     };
     block.stmts.insert(0, if_stmt);
+}
+
+fn generate_unsafe_export_name_attribute(
+    span: Span,
+    export_fn_ident_string: &str,
+    add_debug_assertions_check: bool,
+) -> Attribute {
+    let unsafe_export_name_meta = Meta::List(MetaList {
+        path: path::new(span, ["unsafe"]),
+        delimiter: MacroDelimiter::Paren(token::Paren(span)),
+        tokens: MetaNameValue {
+            path: path::new(span, ["export_name"]),
+            eq_token: Token![=](span),
+            value: expr::lit::string(span, export_fn_ident_string),
+        }
+        .to_token_stream(),
+    });
+    let result_meta = if add_debug_assertions_check {
+        Meta::List(MetaList {
+            path: path::new(span, ["cfg_attr"]),
+            delimiter: MacroDelimiter::Paren(token::Paren(span)),
+            tokens: punctuated::<_, Token![,], _>([
+                Meta::Path(path::new(span, ["debug_assertions"])),
+                unsafe_export_name_meta,
+            ])
+            .to_token_stream(),
+        })
+    } else {
+        unsafe_export_name_meta
+    };
+    let result = Attribute {
+        pound_token: Token![#](span),
+        style: AttrStyle::Outer,
+        bracket_token: token::Bracket(span),
+        meta: result_meta,
+    };
+    return result;
 }
 
 fn name_fn_args<P>(fn_args: &Punctuated<FnArg, P>) -> Vec<NamedFnArg> {

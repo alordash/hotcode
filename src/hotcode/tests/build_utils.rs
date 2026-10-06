@@ -30,34 +30,77 @@ pub fn copy_test_project(test_project_name: &'static str) -> std::io::Result<Tem
 pub fn cargo_clean_rebuild_in(
     target_dir: &Path,
     test_project_name: &'static str,
+    profile: Profile,
 ) -> std::io::Result<()> {
+    let mut clean_args = vec!["clean", "-p", test_project_name];
+    match profile {
+        Profile::Dev => {}
+        Profile::Release => {
+            clean_args.push("--release");
+        }
+    }
     std::process::Command::new("cargo")
-        .args(["clean", "-p", test_project_name])
+        .args(clean_args)
         .current_dir(target_dir)
         .status()?;
+    let mut build_args = vec!["build", "--lib"];
+    match profile {
+        Profile::Dev => {}
+        Profile::Release => {
+            build_args.push("--release");
+        }
+    }
     std::process::Command::new("cargo")
-        .args(["build", "--lib"])
+        .args(build_args)
         .current_dir(target_dir)
         .status()?;
     Ok(())
 }
 
 #[allow(unused)]
-pub fn cargo_clean_workspace_rebuild_in(target_dir: &Path) -> std::io::Result<()> {
+pub fn cargo_clean_workspace_rebuild_in(
+    target_dir: &Path,
+    profile: Profile,
+) -> std::io::Result<()> {
+    let mut clean_args = vec!["clean", "--workspace"];
+    match profile {
+        Profile::Dev => {}
+        Profile::Release => {
+            clean_args.push("--release");
+        }
+    }
     std::process::Command::new("cargo")
-        .args(["clean", "--workspace"])
+        .args(clean_args)
         .current_dir(target_dir)
         .status()?;
+    let mut build_args = vec!["build", "--lib"];
+    match profile {
+        Profile::Dev => {}
+        Profile::Release => {
+            build_args.push("--release");
+        }
+    }
     std::process::Command::new("cargo")
-        .args(["build", "--lib"])
+        .args(build_args)
         .current_dir(target_dir)
         .status()?;
     Ok(())
 }
 
-pub fn cargo_run_in(target_dir: &Path, bin_name: &str) -> std::io::Result<TestProjectProcess> {
+pub fn cargo_run_in(
+    target_dir: &Path,
+    bin_name: &str,
+    profile: Profile,
+) -> std::io::Result<TestProjectProcess> {
+    let mut args = vec!["run", "--bin", bin_name];
+    match profile {
+        Profile::Dev => {}
+        Profile::Release => {
+            args.push("--release");
+        }
+    }
     let run_process = std::process::Command::new("cargo")
-        .args(["run", "--bin", bin_name])
+        .args(args)
         .stdin(std::process::Stdio::piped())
         .stdout(std::process::Stdio::piped())
         .current_dir(target_dir)
@@ -108,4 +151,10 @@ mod test_project_process {
             Ok(())
         }
     }
+}
+
+#[allow(unused)]
+pub enum Profile {
+    Dev,
+    Release,
 }
