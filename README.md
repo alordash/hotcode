@@ -41,7 +41,7 @@ fn add(a: i32, b: i32) -> i32 {
 Run your application, change the code of this function and rebuild your library using `cargo build --lib`. The function
 behavior will change without application restart.
 
-For more information about `hotcode` features refer to [crate documentation](https://docs.rs/hotcode).
+For more information refer to [crate documentation](https://docs.rs/hotcode).
 
 ## Examples
 
