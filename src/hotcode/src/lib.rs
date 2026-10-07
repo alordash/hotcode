@@ -71,7 +71,7 @@
 //! duration of the function's execution. This ensures that a dynamic library won't be unloaded
 //! from memory while there are still functions using it.
 //!
-//! # Performance impact & benchmarks
+//! # Benchmarks
 //!
 //! The impact on performance was measured by benchmarking a Fibonacci function with and without
 //! `#[hotreload]` attribute. Two implementations were benchmarked: one that uses recursion and
@@ -82,6 +82,8 @@
 //! | CPU \ implementation | slow, ns | hotreload slow, ns | fast, ns  | hotreload fast, ns  |
 //! | -------------------- | -------- | ------------------ | --------- | ------------------- |
 //! | i7-13700H            | 18814    | 18499              | 5.4211    | 98.726              |
+//!
+//! Slow implementation did not notice any changes, but fast implementation became ~19 times slower.
 //!
 //! To run benchmarks locally, open `benchmarks` folder in the source code repository root
 //! and run `cargo build --release --lib` before running `cargo bench`.
