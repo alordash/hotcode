@@ -14,7 +14,7 @@ use syn::*;
 
 pub struct Parameters<'a> {
     pub attributes: &'a mut Vec<Attribute>,
-    pub signature: &'a Signature,
+    pub signature: &'a mut Signature,
     pub block: &'a mut Block,
     pub add_debug_assertions_check: bool,
 }
@@ -40,10 +40,10 @@ pub fn apply(
         add_debug_assertions_check,
     );
     attributes.push(unsafe_export_name_attribute);
+    let named_fn_args = name_fn_args(&mut signature.inputs);
     let return_stmt = {
         let span = block.span();
         let caller_library_file_name = caller_crate::library_file_name();
-        let named_fn_args = name_fn_args(&signature.inputs);
         let args = named_fn_args
             .iter()
             .map(|x| match x {
@@ -156,7 +156,39 @@ pub fn apply(
             None,
         )
     };
-    block.stmts.insert(0, if_stmt);
+    let deconstruct_renamed_argument_stmts = named_fn_args
+        .into_iter()
+        .filter_map(|x| match x {
+            NamedFnArg::NamedTyped(pat_named_type) => match pat_named_type.maybe_source_pat {
+                Some(source_pat) => Some((source_pat, pat_named_type.pat_ident)),
+                _ => None,
+            },
+            _ => None,
+        })
+        .map(|(source_pat, pat_ident)| {
+            let span = source_pat.span();
+            Stmt::Local(Local {
+                attrs: Vec::new(),
+                let_token: Token![let](span),
+                modifiers: LocalModifiers::default(),
+                pat: *source_pat,
+                init: Some(LocalInit {
+                    eq_token: Token![=](span),
+                    expr: Box::new(Expr::Path(ExprPath {
+                        attrs: Vec::new(),
+                        qself: None,
+                        path: path::from_ident(pat_ident.ident),
+                    })),
+                    diverge: None,
+                }),
+                semi_token: Token![;](span),
+            })
+        });
+    let new_stmts: Vec<_> = core::iter::once(if_stmt)
+        .chain(deconstruct_renamed_argument_stmts)
+        .chain(core::mem::take(&mut block.stmts))
+        .collect();
+    block.stmts = new_stmts;
 }
 
 fn generate_unsafe_export_name_attribute(
@@ -196,25 +228,34 @@ fn generate_unsafe_export_name_attribute(
     return result;
 }
 
-fn name_fn_args<P>(fn_args: &Punctuated<FnArg, P>) -> Vec<NamedFnArg> {
+fn name_fn_args<P>(fn_args: &mut Punctuated<FnArg, P>) -> Vec<NamedFnArg> {
     let result = fn_args
-        .iter()
+        .iter_mut()
         .enumerate()
         .map(|(i, x)| match x {
             FnArg::Receiver(r) => NamedFnArg::Receiver(r.clone()),
-            FnArg::Typed(t) => NamedFnArg::NamedTyped(PatNamedType {
-                pat_ident: match t.pat.as_ref() {
-                    Pat::Ident(pat_ident) => pat_ident.clone(),
-                    _ => PatIdent {
-                        attrs: Vec::new(),
-                        by_ref: None,
-                        mutability: None,
-                        ident: format_ident!("__arg_{i}"),
-                        subpat: None,
-                    },
-                },
-                ty: t.ty.clone(),
-            }),
+            FnArg::Typed(t) => {
+                let (maybe_source_pat, pat_ident) = match t.pat.as_ref() {
+                    Pat::Ident(existing) => (None, existing.clone()),
+                    _ => {
+                        let new = PatIdent {
+                            attrs: Vec::new(),
+                            by_ref: None,
+                            mutability: None,
+                            ident: format_ident!("__arg_{i}"),
+                            subpat: None,
+                        };
+                        let source_pat =
+                            core::mem::replace(t.pat.as_mut(), Pat::Ident(new.clone()));
+                        (Some(Box::new(source_pat)), new)
+                    }
+                };
+                NamedFnArg::NamedTyped(PatNamedType {
+                    maybe_source_pat,
+                    pat_ident,
+                    ty: t.ty.clone(),
+                })
+            }
         })
         .collect();
     return result;

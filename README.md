@@ -12,7 +12,8 @@ This library exposes `hotreload` attribute, which can be applied to standalone f
 blocks. This attribute makes a function hot-reloadable: its code and behavior can be changed on the fly while the
 application is still running.
 
-💻 Works on **Linux**, **macOS** and **Windows**.
+💻 Works on **Linux**, **macOS** and **Windows**.  
+🪲 Hot-reloaded code can be debugged.
 
 ## Usage
 
@@ -20,7 +21,7 @@ Add `hotcode` to your `dependencies`:
 
 ```toml
 [dependencies]
-hotcode = "0.1.4"
+hotcode = "0.1.5"
 ```
 
 Add `cdylib` to your library's crate types:

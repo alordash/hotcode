@@ -27,7 +27,7 @@ pub fn hotreload(
     let mut item_fn = parse_macro_input!(proc_macro_item as ItemFn);
     hotreload_syntax::apply(hotreload_syntax::Parameters {
         attributes: &mut item_fn.attrs,
-        signature: &item_fn.sig,
+        signature: &mut item_fn.sig,
         block: &mut item_fn.block,
         add_debug_assertions_check,
     });

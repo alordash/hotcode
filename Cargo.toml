@@ -7,9 +7,9 @@ members = [
 ]
 
 [workspace.dependencies]
-hotcode = { version = "0.1.4", path = "src/hotcode" }
-hotcode_core = { version = "0.1.4", path = "src/hotcode_core" }
-hotcode_proc_macro = { version = "0.1.4", path = "src/hotcode_proc_macro" }
+hotcode = { version = "0.1.5", path = "src/hotcode" }
+hotcode_core = { version = "0.1.5", path = "src/hotcode_core" }
+hotcode_proc_macro = { version = "0.1.5", path = "src/hotcode_proc_macro" }
 
 proc-macro2 = { version = "1.0.95", features = ["span-locations"] }
 quote = "1.0.40"
