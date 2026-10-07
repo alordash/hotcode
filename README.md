@@ -8,8 +8,9 @@ Library for hot-reloading functions in Rust.
 
 ## Overview
 
-This library exposes `hotreload` attribute that can be applied to standalone or implementation functions. This attribute
-makes function hot-reloadable: it's code and behavior can be changed on the fly while the application is still running.
+This library exposes `hotreload` attribute, which can be applied to standalone functions or to functions in `impl`
+blocks. This attribute makes a function hot-reloadable: its code and behavior can be changed on the fly while the
+application is still running.
 
 💻 Works on **Linux**, **macOS** and **Windows**.
 
@@ -19,10 +20,10 @@ Add `hotcode` to your `dependencies`:
 
 ```toml
 [dependencies]
-hotcode = "0.1.2"
+hotcode = "0.1.3"
 ```
 
-Add `cdylib` to your library crate types:
+Add `cdylib` to your library's crate types:
 
 ```toml
 [lib]
@@ -38,21 +39,21 @@ fn add(a: i32, b: i32) -> i32 {
 }
 ```
 
-Run your application, change the code of this function and rebuild your library using `cargo build --lib`. The function
-behavior will change without application restart.
+Run your application, change the code of this function and rebuild your library using `cargo build --lib`. The
+function's behavior will change without restarting the application.
 
-For more information refer to [crate documentation](https://docs.rs/hotcode).
+For more information, refer to [crate documentation](https://docs.rs/hotcode).
 
 ## Examples
 
 Examples are located in the [`examples`](examples) folder. The simplest example is the
 [`single_crate`](examples/single_crate) project.
 
-# Minimum Supported Rust Version (MSRV)
+## Minimum Supported Rust Version (MSRV)
 
 `hotcode` is supported on Rust 1.89.0 and higher. `hotcode`'s MSRV will not be changed in the future without bumping the
 major or minor version.
 
-# License
+## License
 
-`hotcode` is distributed under the terms of MIT license. See [license.txt](license.txt) for details.
+`hotcode` is distributed under the terms of the MIT license. See [license.txt](license.txt) for details.

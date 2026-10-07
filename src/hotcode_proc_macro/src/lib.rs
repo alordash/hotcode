@@ -7,8 +7,11 @@ mod source_code_id;
 
 use source_code_id::*;
 
-/// The whole point. Apply it to your function inside `cdylib` library crate to make it
+/// The whole point. Apply it to a function inside `cdylib` library crate to make it
 /// hot-reloadable. Refer to `hotcode` crate documentation for more information.
+///
+/// Accepts `always` argument to make it work in all build profiles: `#[hotreload(always)]`.
+/// By default, it works only when `debug_assertions` compiler flag is enabled.
 #[proc_macro_attribute]
 pub fn hotreload(
     proc_macro_attribute: proc_macro::TokenStream,

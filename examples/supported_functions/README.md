@@ -1,9 +1,9 @@
 # Supported functions example
 
-This example demonstrates various functions that can be hotreloaded by `hotcode`.
+This example demonstrates various functions that can be hot-reloaded by `hotcode`.
 
 Run project with `cargo run`, then make changes to [`src/lib.rs`](src/lib.rs) and rebuild library with
-`cargo build --lib` without stopping running binary. You should see new value in console output:
+`cargo build --lib` without stopping running binary. You should see new values in console output:
 
 ```
 ...
