@@ -33,7 +33,8 @@ where
         let created = write.entry(key).insert_entry(new_value);
         // SAFETY: created entries can not be removed or changed due to this struct's API, so it
         // is safe to treat references to its entries as having same lifetime as `&self`.
-        // `IndexMap` also guarantees that order of entries will not change.
+        // `IndexMap` also guarantees that order of entries will not change, and they won't be
+        // moved.
         return unsafe { core::mem::transmute::<&V, &V>(created.get()) };
     }
 
@@ -42,7 +43,8 @@ where
         if let Some(existing) = read.get(key) {
             // SAFETY: created entries can not be removed or changed due to this struct's API, so it
             // is safe to treat references to its entries as having same lifetime as `&self`.
-            // `IndexMap` also guarantees that order of entries will not change.
+            // `IndexMap` also guarantees that order of entries will not change, and they won't be
+            // moved.
             return Some(unsafe { core::mem::transmute::<&V, &V>(existing) });
         }
         return None;

@@ -14,6 +14,7 @@ static IS_OUTSIDE_DYNAMIC_LIBRARY: LazyLock<bool> =
 static IS_OUTSIDE_DYNAMIC_LIBRARY: LazyLock<bool> =
     LazyLock::new(unix::slow_is_outside_dynamic_library);
 
+#[doc(hidden)]
 pub fn is_outside_dynamic_library() -> bool {
     *IS_OUTSIDE_DYNAMIC_LIBRARY
 }
