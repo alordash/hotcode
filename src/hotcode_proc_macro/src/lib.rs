@@ -7,6 +7,8 @@ mod source_code_id;
 
 use source_code_id::*;
 
+/// The whole point. Apply it to your function inside `cdylib` library crate to make it
+/// hot-reloadable. Refer to `hotcode` crate documentation for more information.
 #[proc_macro_attribute]
 pub fn hotreload(
     proc_macro_attribute: proc_macro::TokenStream,

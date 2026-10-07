@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, LazyLock};
 use std::time::Instant;
 
+#[doc(hidden)]
 pub struct LibraryWrapper {
     library_copy_path: PathBuf,
     fn_ptrs_map: GrowMap<&'static [u8], *mut core::ffi::c_void>,

@@ -19,7 +19,7 @@ Add `hotcode` to your `dependencies`:
 
 ```toml
 [dependencies]
-hotcode = "0.1.1"
+hotcode = "0.1.2"
 ```
 
 Add `cdylib` to your library crate types:
