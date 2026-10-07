@@ -86,6 +86,29 @@
 //! To run benchmarks locally, open `benchmarks` folder in the source code repository root
 //! and run `cargo build --release --lib` before running `cargo bench`.
 //!
+//! # Limitations
+//!
+//! 1. Cannot hot-reload functions with generics, because they are generally not supported in
+//!    dynamic libraries.
+//! 2. Changing function ABI without changing its call sites is Undefined Behavior. For example, if
+//!    you have the following code:
+//!    ```rust
+//!    # use hotcode::hotreload;
+//!    fn foo() { bar("warpten") }
+//!
+//!    #[hotreload]
+//!    fn bar(str: &str) { println!("{str:?}") }
+//!    ```
+//!    and then change it to:
+//!    ```rust
+//!    # use hotcode::hotreload;
+//!    fn foo() { bar(&[1, 2, 3]) }
+//!
+//!    #[hotreload]
+//!    fn bar(array: &[i32]) { println!("{array:?}") }
+//!    ```
+//!    you will get UB because `foo` was not hot-reloaded - it still passes string instead of array.
+//!
 //! # Examples
 //!
 //! Examples of desired project structure and supported functions are located in `examples`
