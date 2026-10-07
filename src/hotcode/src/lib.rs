@@ -85,11 +85,11 @@
 //!
 //! To run benchmarks locally, open `benchmarks` folder in source code repository root and run
 //! `cargo build --release --lib` before running `cargo bench`.
-//! 
+//!
 //! # Examples
-//! 
+//!
 //! Examples of desired project structure and supported functions are located in `examples` folder
-//! in source code repository root.
+//! in source code repository root. The simplest example is the `single_crate` project.
 pub use hotcode_core::{
     LibraryWrapper, get_platform_library_file_name, is_outside_dynamic_library, provide_fn,
     provide_library_wrapper,

@@ -1,6 +1,6 @@
 # hotcode
 
-Library for hotreload in Rust.
+Library for hot-reloading functions in Rust.
 
 [![Build Status](https://github.com/alordash/hotcode/actions/workflows/ci.yml/badge.svg)](https://github.com/alordash/hotcode/actions/workflows/ci.yml)
 [![Crates.io](https://img.shields.io/crates/v/hotcode.svg)](https://crates.io/crates/hotcode)
@@ -45,7 +45,8 @@ For more information refer to [crate documentation](https://docs.rs/hotcode).
 
 ## Examples
 
-Examples can be seen in [`examples`](examples) folder.
+Examples are located in the [`examples`](examples) folder. The simplest example is the
+[`single_crate`](examples/single_crate) project.
 
 # Minimum Supported Rust Version (MSRV)
 
