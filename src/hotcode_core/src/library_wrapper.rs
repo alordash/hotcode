@@ -10,8 +10,6 @@ pub struct LibraryWrapper {
     maybe_inner: Option<libloading::Library>,
 }
 
-static TIME_START: LazyLock<Instant> = LazyLock::new(Instant::now);
-
 impl LibraryWrapper {
     pub fn new(library_source_path: PathBuf) -> Self {
         let library_copy_path = format_library_copy_path(&library_source_path);
@@ -86,6 +84,8 @@ impl Drop for LibraryWrapper {
         }
     }
 }
+
+static TIME_START: LazyLock<Instant> = LazyLock::new(Instant::now);
 
 #[cfg_attr(test, automock::mock)]
 #[inline(always)]
