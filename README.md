@@ -52,7 +52,7 @@ Examples are located in the [`examples`](examples) folder. The simplest example 
 
 ## Demo
 
-![hotreload_renderust.mp4](media/hotreload_renderust.mp4)
+https://github.com/user-attachments/assets/f4b12556-4c89-4966-906a-7a846858dfd6
 
 ## Minimum Supported Rust Version (MSRV)
 
