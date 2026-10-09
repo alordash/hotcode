@@ -52,7 +52,7 @@ Examples are located in the [`examples`](examples) folder. The simplest example 
 
 ## Demo
 
-https://github.com/user-attachments/assets/f4b12556-4c89-4966-906a-7a846858dfd6
+https://github.com/user-attachments/assets/9ff17331-0953-4f6f-8956-472dde6e29d7
 
 ## Minimum Supported Rust Version (MSRV)
 
