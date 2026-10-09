@@ -62,7 +62,3 @@ major or minor version.
 ## License
 
 `hotcode` is distributed under the terms of the MIT license. See [license.txt](license.txt) for details.
-
-# "The Slop Line"
-
-Everything below this was written by my LLMs, not me.
