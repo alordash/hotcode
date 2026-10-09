@@ -50,6 +50,10 @@ For more information, refer to [crate documentation](https://docs.rs/hotcode).
 Examples are located in the [`examples`](examples) folder. The simplest example is the
 [`single_crate`](examples/single_crate) project.
 
+## Demo
+
+![hotreload_renderust.mp4](media/hotreload_renderust.mp4)
+
 ## Minimum Supported Rust Version (MSRV)
 
 `hotcode` is supported on Rust 1.89.0 and higher. `hotcode`'s MSRV will not be changed in the future without bumping the

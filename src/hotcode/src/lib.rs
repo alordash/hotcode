@@ -81,9 +81,12 @@
 //!
 //! | CPU \ implementation | slow, ns | hotreload slow, ns | fast, ns  | hotreload fast, ns  |
 //! | -------------------- | -------- | ------------------ | --------- | ------------------- |
-//! | i7-13700H            | 18814    | 18499              | 5.4211    | 98.726              |
+//! | i7-13700H            | 18814    | 18499              |  5.421    |  98.73              |
+//! | i7-14700HX           | 17467    | 17300              | 18.659    | 109.43              |
+//! | Apple M4             | 11132    | 11125              |  9.192    |  46.23              |
 //!
-//! Slow implementation did not notice any changes, but fast implementation became ~19 times slower.
+//! Slow implementation did not notice any changes, but fast implementation became several times
+//! slower.
 //!
 //! To run benchmarks locally, open `benchmarks` folder in the source code repository root
 //! and run `cargo build --release --lib` before running `cargo bench`.
