@@ -48,7 +48,6 @@ where
 mod tests {
     #![allow(non_snake_case)]
     use super::*;
-    use automock::AsTimes;
 
     type Key = usize;
     type Value = String;
@@ -59,14 +58,14 @@ mod tests {
         let grow_map = GrowMap::<Key, Value>::new();
         let key: Key = 123;
         let new_value = "quo vadis".to_owned();
-        factory::setup().returns(new_value.clone());
+        factory::setup().returns_once(new_value.clone());
 
         // Act
         let result = grow_map.get_or_insert_with(key, factory);
 
         // Assert
         assert_eq!(result, new_value);
-        factory::received::<Value>(1.time());
+        factory::verify_calls::<Value>();
     }
 
     #[test]
@@ -75,6 +74,7 @@ mod tests {
         let grow_map = GrowMap::<Key, Value>::new();
         let key: Key = 123;
         let existing_value = "quo vadis".to_owned();
+        factory::setup::<Value>();
         {
             let mut grow_map_write = grow_map
                 .inner
@@ -88,7 +88,7 @@ mod tests {
 
         // Assert
         assert_eq!(result, existing_value);
-        factory::received_nothing::<Value>();
+        factory::verify_calls::<Value>();
     }
 
     #[test]

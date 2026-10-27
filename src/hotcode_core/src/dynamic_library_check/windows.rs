@@ -71,7 +71,8 @@ mod tests {
     #[test]
     fn slow_is_outside_dynamic_library_GetModuleHandleExWReturnsZero_ReturnsTrue() {
         // Arrange
-        get_module_handle_ex_w::setup(Arg::Any, Arg::Any, Arg::Any).returns(0);
+        get_module_handle_ex_w::setup(FLAGS, slow_is_outside_dynamic_library as *const _, Arg::Any)
+            .returns_once(0);
 
         // Act
         let result = slow_is_outside_dynamic_library();
@@ -79,20 +80,14 @@ mod tests {
         // Assert
         assert!(result);
 
-        get_module_handle_ex_w::received(
-            FLAGS,
-            slow_is_outside_dynamic_library as *const _,
-            Arg::Any,
-            1.time(),
-        )
-        .no_other_calls();
+        get_module_handle_ex_w::verify_calls();
     }
 
     #[test]
     fn slow_is_outside_dynamic_library_ReturnedModuleIsNull_ReturnsTrue() {
         // Arrange
-        get_module_handle_ex_w::setup(Arg::Any, Arg::Any, Arg::Any)
-            .returns(1)
+        get_module_handle_ex_w::setup(FLAGS, slow_is_outside_dynamic_library as *const _, Arg::Any)
+            .returns_once(1)
             .and_does(|(_, _, h_module)| unsafe {
                 **h_module = core::ptr::null_mut();
             });
@@ -103,26 +98,21 @@ mod tests {
         // Assert
         assert!(result);
 
-        get_module_handle_ex_w::received(
-            FLAGS,
-            slow_is_outside_dynamic_library as *const _,
-            Arg::Any,
-            1.time(),
-        )
-        .no_other_calls();
+        get_module_handle_ex_w::verify_calls();
     }
 
     #[test]
     fn slow_is_outside_dynamic_library_ReturnedFileNameLengthIsZero_ReturnsTrue() {
         // Arrange
         let p_h_module = 1234 as HMODULE;
-        get_module_handle_ex_w::setup(Arg::Any, Arg::Any, Arg::Any)
-            .returns(1)
+        get_module_handle_ex_w::setup(FLAGS, slow_is_outside_dynamic_library as *const _, Arg::Any)
+            .returns_once(1)
             .and_does(move |(_, _, h_module)| unsafe {
                 **h_module = p_h_module;
             });
 
-        get_module_file_name_w::setup(Arg::Any, Arg::Any, Arg::Any).returns(0);
+        get_module_file_name_w::setup(p_h_module, Arg::Any, FILE_NAME_BUFFER_LENGTH as DWORD)
+            .returns_once(0);
 
         // Act
         let result = slow_is_outside_dynamic_library();
@@ -130,36 +120,24 @@ mod tests {
         // Assert
         assert!(result);
 
-        get_module_handle_ex_w::received(
-            FLAGS,
-            slow_is_outside_dynamic_library as *const _,
-            Arg::Any,
-            1.time(),
-        )
-        .no_other_calls();
-
-        get_module_file_name_w::received(
-            p_h_module,
-            Arg::Any,
-            FILE_NAME_BUFFER_LENGTH as DWORD,
-            1.time(),
-        )
-        .no_other_calls();
+        get_module_handle_ex_w::verify_calls();
+        get_module_file_name_w::verify_calls();
     }
 
     #[test]
     fn slow_is_outside_dynamic_library_ReturnedCurrentExeIsError_ReturnsTrue() {
         // Arrange
         let p_h_module = 1234 as HMODULE;
-        get_module_handle_ex_w::setup(Arg::Any, Arg::Any, Arg::Any)
-            .returns(1)
+        get_module_handle_ex_w::setup(FLAGS, slow_is_outside_dynamic_library as *const _, Arg::Any)
+            .returns_once(1)
             .and_does(move |(_, _, h_module)| unsafe {
                 **h_module = p_h_module;
             });
 
-        get_module_file_name_w::setup(Arg::Any, Arg::Any, Arg::Any).returns(1);
+        get_module_file_name_w::setup(p_h_module, Arg::Any, FILE_NAME_BUFFER_LENGTH as DWORD)
+            .returns_once(1);
 
-        current_exe::setup().returns(Err(std::io::Error::other("whatever")));
+        current_exe::setup().returns_once(Err(std::io::Error::other("whatever")));
 
         // Act
         let result = slow_is_outside_dynamic_library();
@@ -167,39 +145,25 @@ mod tests {
         // Assert
         assert!(result);
 
-        get_module_handle_ex_w::received(
-            FLAGS,
-            slow_is_outside_dynamic_library as *const _,
-            Arg::Any,
-            1.time(),
-        )
-        .no_other_calls();
-
-        get_module_file_name_w::received(
-            p_h_module,
-            Arg::Any,
-            FILE_NAME_BUFFER_LENGTH as DWORD,
-            1.time(),
-        )
-        .no_other_calls();
-
-        current_exe::received(1.time()).no_other_calls();
+        get_module_handle_ex_w::verify_calls();
+        get_module_file_name_w::verify_calls();
+        current_exe::verify_calls();
     }
 
     #[test]
     fn slow_is_outside_dynamic_library_CurrentExeEndsWithModuleName_ReturnsTrue() {
         // Arrange
         let p_h_module = 1234 as HMODULE;
-        get_module_handle_ex_w::setup(Arg::Any, Arg::Any, Arg::Any)
-            .returns(1)
+        get_module_handle_ex_w::setup(FLAGS, slow_is_outside_dynamic_library as *const _, Arg::Any)
+            .returns_once(1)
             .and_does(move |(_, _, h_module)| unsafe {
                 **h_module = p_h_module;
             });
 
         let module_name = "quo vadis";
         let module_name_utf16: Vec<u16> = module_name.encode_utf16().collect();
-        get_module_file_name_w::setup(Arg::Any, Arg::Any, Arg::Any)
-            .returns(module_name_utf16.len() as DWORD)
+        get_module_file_name_w::setup(p_h_module, Arg::Any, FILE_NAME_BUFFER_LENGTH as DWORD)
+            .returns_once(module_name_utf16.len() as DWORD)
             .and_does(move |(_, file_name_buffer_ptr, _)| unsafe {
                 core::ptr::copy_nonoverlapping(
                     module_name_utf16.as_ptr(),
@@ -209,7 +173,7 @@ mod tests {
             });
 
         let current_exe = format!("veridis quo/{module_name}");
-        current_exe::setup().returns(Ok(PathBuf::from(current_exe)));
+        current_exe::setup().returns_once(Ok(PathBuf::from(current_exe)));
 
         // Act
         let result = slow_is_outside_dynamic_library();
@@ -217,38 +181,24 @@ mod tests {
         // Assert
         assert!(result);
 
-        get_module_handle_ex_w::received(
-            FLAGS,
-            slow_is_outside_dynamic_library as *const _,
-            Arg::Any,
-            1.time(),
-        )
-        .no_other_calls();
-
-        get_module_file_name_w::received(
-            p_h_module,
-            Arg::Any,
-            FILE_NAME_BUFFER_LENGTH as DWORD,
-            1.time(),
-        )
-        .no_other_calls();
-
-        current_exe::received(1.time()).no_other_calls();
+        get_module_handle_ex_w::verify_calls();
+        get_module_file_name_w::verify_calls();
+        current_exe::verify_calls();
     }
 
     #[test]
     fn slow_is_outside_dynamic_library_CurrentExeDoesNotEndWithModuleName_ReturnsFalse() {
         // Arrange
         let p_h_module = 1234 as HMODULE;
-        get_module_handle_ex_w::setup(Arg::Any, Arg::Any, Arg::Any)
-            .returns(1)
+        get_module_handle_ex_w::setup(FLAGS, slow_is_outside_dynamic_library as *const _, Arg::Any)
+            .returns_once(1)
             .and_does(move |(_, _, h_module)| unsafe {
                 **h_module = p_h_module;
             });
 
         let module_name_utf16: Vec<u16> = "quo vadis".encode_utf16().collect();
-        get_module_file_name_w::setup(Arg::Any, Arg::Any, Arg::Any)
-            .returns(module_name_utf16.len() as DWORD)
+        get_module_file_name_w::setup(p_h_module, Arg::Any, FILE_NAME_BUFFER_LENGTH as DWORD)
+            .returns_once(module_name_utf16.len() as DWORD)
             .and_does(move |(_, file_name_buffer_ptr, _)| unsafe {
                 core::ptr::copy_nonoverlapping(
                     module_name_utf16.as_ptr(),
@@ -257,7 +207,7 @@ mod tests {
                 );
             });
 
-        current_exe::setup().returns(Ok(PathBuf::from("veridis quo")));
+        current_exe::setup().returns_once(Ok(PathBuf::from("veridis quo")));
 
         // Act
         let result = slow_is_outside_dynamic_library();
@@ -265,22 +215,8 @@ mod tests {
         // Assert
         assert!(!result);
 
-        get_module_handle_ex_w::received(
-            FLAGS,
-            slow_is_outside_dynamic_library as *const _,
-            Arg::Any,
-            1.time(),
-        )
-        .no_other_calls();
-
-        get_module_file_name_w::received(
-            p_h_module,
-            Arg::Any,
-            FILE_NAME_BUFFER_LENGTH as DWORD,
-            1.time(),
-        )
-        .no_other_calls();
-
-        current_exe::received(1.time()).no_other_calls();
+        get_module_handle_ex_w::verify_calls();
+        get_module_file_name_w::verify_calls();
+        current_exe::verify_calls();
     }
 }

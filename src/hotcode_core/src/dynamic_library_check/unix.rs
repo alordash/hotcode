@@ -53,7 +53,7 @@ mod tests {
     #[test]
     fn slow_is_outside_dynamic_library_dladdrReturnsZero_ReturnsTrue() {
         // Arrange
-        dladdr::setup(Arg::Any, Arg::Any).returns(0);
+        dladdr::setup(slow_is_outside_dynamic_library as *const c_void, Arg::Any).returns_once(0);
 
         // Act
         let result = slow_is_outside_dynamic_library();
@@ -61,19 +61,14 @@ mod tests {
         // Assert
         assert!(result);
 
-        dladdr::received(
-            slow_is_outside_dynamic_library as *const c_void,
-            Arg::Any,
-            1.time(),
-        )
-        .no_other_calls();
+        dladdr::verify_calls();
     }
 
     #[test]
     fn slow_is_outside_dynamic_library_dliFNameIsNull() {
         // Arrange
-        dladdr::setup(Arg::Any, Arg::Any)
-            .returns(1)
+        dladdr::setup(slow_is_outside_dynamic_library as *const c_void, Arg::Any)
+            .returns_once(1)
             .and_does(|(_, info_ptr)| {
                 let info = unsafe {
                     (*info_ptr)
@@ -89,20 +84,15 @@ mod tests {
         // Assert
         assert!(result);
 
-        dladdr::received(
-            slow_is_outside_dynamic_library as *const c_void,
-            Arg::Any,
-            1.time(),
-        )
-        .no_other_calls();
+        dladdr::verify_calls();
     }
 
     #[test]
     fn slow_is_outside_dynamic_library_CurrentExeEndsWithModuleName_ReturnsTrue() {
         // Arrange
         let module_name = b"quo vadis\0";
-        dladdr::setup(Arg::Any, Arg::Any)
-            .returns(1)
+        dladdr::setup(slow_is_outside_dynamic_library as *const c_void, Arg::Any)
+            .returns_once(1)
             .and_does(move |(_, info_ptr)| {
                 let info = unsafe {
                     (*info_ptr)
@@ -113,7 +103,7 @@ mod tests {
             });
 
         let current_exe = "veridis quo/quo vadis";
-        current_exe::setup().returns(Ok(PathBuf::from(current_exe)));
+        current_exe::setup().returns_once(Ok(PathBuf::from(current_exe)));
 
         // Act
         let result = slow_is_outside_dynamic_library();
@@ -121,19 +111,15 @@ mod tests {
         // Assert
         assert!(result);
 
-        dladdr::received(
-            slow_is_outside_dynamic_library as *const c_void,
-            Arg::Any,
-            1.time(),
-        )
-        .no_other_calls();
+        dladdr::verify_calls();
+        current_exe::verify_calls();
     }
 
     #[test]
     fn slow_is_outside_dynamic_library_CurrentExeDoesNotEndWithModuleName_ReturnsFalse() {
         // Arrange
-        dladdr::setup(Arg::Any, Arg::Any)
-            .returns(1)
+        dladdr::setup(slow_is_outside_dynamic_library as *const c_void, Arg::Any)
+            .returns_once(1)
             .and_does(move |(_, info_ptr)| {
                 let info = unsafe {
                     (*info_ptr)
@@ -143,7 +129,7 @@ mod tests {
                 info.dli_fname = b"quo vadis\0" as *const _ as *const i8;
             });
 
-        current_exe::setup().returns(Ok(PathBuf::from("veridis quo")));
+        current_exe::setup().returns_once(Ok(PathBuf::from("veridis quo")));
 
         // Act
         let result = slow_is_outside_dynamic_library();
@@ -151,11 +137,7 @@ mod tests {
         // Assert
         assert!(!result);
 
-        dladdr::received(
-            slow_is_outside_dynamic_library as *const c_void,
-            Arg::Any,
-            1.time(),
-        )
-        .no_other_calls();
+        dladdr::verify_calls();
+        current_exe::verify_calls();
     }
 }

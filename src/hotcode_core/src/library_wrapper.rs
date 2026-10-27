@@ -122,7 +122,7 @@ mod tests {
     fn format_library_copy_path_NoSourceExtension_Ok() {
         // Arrange
         let time_tick_stamp = 1234u128;
-        get_time_tick_stamp::setup().returns(time_tick_stamp);
+        get_time_tick_stamp::setup().returns_once(time_tick_stamp);
 
         let library_source_path = Path::new("library/source/path");
 
@@ -132,13 +132,14 @@ mod tests {
         // Assert
         let expected_result = PathBuf::from(format!("library/source/path_{time_tick_stamp}"));
         assert_eq!(result, expected_result);
+        get_time_tick_stamp::verify_calls();
     }
 
     #[test]
     fn format_library_copy_path_WithSourceExtension_Ok() {
         // Arrange
         let time_tick_stamp = 1234u128;
-        get_time_tick_stamp::setup().returns(time_tick_stamp);
+        get_time_tick_stamp::setup().returns_once(time_tick_stamp);
 
         let library_source_path = Path::new("library/source/path.amogus");
 
@@ -149,5 +150,6 @@ mod tests {
         let expected_result =
             PathBuf::from(format!("library/source/path_{time_tick_stamp}.amogus"));
         assert_eq!(result, expected_result);
+        get_time_tick_stamp::verify_calls();
     }
 }
